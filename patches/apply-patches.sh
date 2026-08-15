@@ -20,7 +20,7 @@ sed -i '/error = cp_new_stat64(\&stat, \&statbuf);/a#ifdef CONFIG_KSU_MANUAL_HOO
 
 # fs/read_write.c: ksu_handle_sys_read (init rc file read proxy, doc-compliant)
 sed -i '/^SYSCALL_DEFINE3(read, unsigned int, fd, char __user \*, buf, size_t, count)$/i#ifdef CONFIG_KSU_MANUAL_HOOK\nextern bool ksu_init_rc_hook __read_mostly;\nextern int ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr, size_t *count_ptr);\n#endif' fs/read_write.c
-sed -i '/if (f.file) {/i#ifdef CONFIG_KSU_MANUAL_HOOK\n\tif (unlikely(ksu_init_rc_hook))\n\t\tksu_handle_sys_read(fd, \&buf, \&count);\n#endif' fs/read_write.c
+sed -i '/ret = vfs_read(f.file, buf, count, \&pos);/i#ifdef CONFIG_KSU_MANUAL_HOOK\n\tif (unlikely(ksu_init_rc_hook))\n\t\tksu_handle_sys_read(fd, \&buf, \&count);\n#endif' fs/read_write.c
 
 # kernel/reboot.c: ksu_handle_sys_reboot
 sed -i '/^SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,$/i#ifdef CONFIG_KSU_MANUAL_HOOK\nextern int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user **arg);\n#endif' kernel/reboot.c

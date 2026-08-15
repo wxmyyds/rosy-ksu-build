@@ -22,8 +22,6 @@ jobs:
           echo "CONFIG_KSU_MANUAL_HOOK=y" >> arch/arm64/configs/rosy-perf_defconfig
           echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> arch/arm64/configs/rosy-perf_defconfig
           echo "# CONFIG_BTFM_SLIM is not set" >> arch/arm64/configs/rosy-perf_defconfig
-          echo "# CONFIG_MSMB_CAMERA is not set" >> arch/arm64/configs/rosy-perf_defconfig
-          echo "# CONFIG_MSM_CAMERA is not set" >> arch/arm64/configs/rosy-perf_defconfig
           ln -sf "$(pwd)/drivers/gpu/msm/kgsl_trace.h" include/trace/kgsl_trace.h
 
       - name: Apply kernel patches

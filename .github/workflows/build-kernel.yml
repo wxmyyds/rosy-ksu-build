@@ -66,6 +66,35 @@ jobs:
           make rosy-perf_defconfig
           make -j$(nproc) Image.gz-dtb KCFLAGS="-Wno-error=misleading-indentation -Wno-error=maybe-uninitialized -Wno-error=address" 2>&1 | tee build.log
 
+      - name: Build AnyKernel3 package
+        run: |
+          git clone --depth=1 https://github.com/osm0sis/AnyKernel3 /tmp/ak3
+          cp rosy/arch/arm64/boot/Image.gz-dtb /tmp/ak3/Image.gz-dtb
+          cat > /tmp/ak3/anykernel.sh << 'EOF'
+### AnyKernel3 Ramdisk Mod Script
+## osm0sis @ xda-developers
+
+### AnyKernel setup
+properties() { '
+kernel.string=ReSukiSU for Xiaomi Redmi 5 (rosy) by wxmyyds
+do.devicecheck=1
+device.name1=rosy
+do.cleanup=1
+'; }
+
+BLOCK=/dev/block/bootdevice/by-name/boot;
+is_slot_device=auto;
+no_block_display=1;
+
+. tools/ak3-core.sh;
+
+split_boot;
+flash_boot;
+EOF
+          cd /tmp/ak3
+          rm -rf .git LICENSE README.md .github modules patch ramdisk
+          zip -r9 $GITHUB_WORKSPACE/rosy-ksu-ak3.zip .
+
       - name: Upload kernel
         uses: actions/upload-artifact@v4
         with:
@@ -73,3 +102,4 @@ jobs:
           path: |
             rosy/arch/arm64/boot/Image.gz-dtb
             rosy/build.log
+            rosy-ksu-ak3.zip

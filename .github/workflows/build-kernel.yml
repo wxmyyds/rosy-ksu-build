@@ -20,7 +20,8 @@ jobs:
           echo "CONFIG_KSU_MANUAL_HOOK=y" >> arch/arm64/configs/rosy-perf_defconfig
           # AOSP clang 兼容性修复
           echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> arch/arm64/configs/rosy-perf_defconfig
-          echo "# CONFIG_BTFM_SLIM is not set" >> arch/arm64/configs/rosy-perf_defconfig
+          # clang 兼容性修复：蓝牙驱动头文件包含路径
+          sed -i 's|ccflags-y += -D__CHECK_ENDIAN__|ccflags-y += -D__CHECK_ENDIAN__\nccflags-y += -I$$(srctree)/drivers/bluetooth|' drivers/bluetooth/Makefile
           # clang 兼容性修复：kgsl trace 头文件包含路径
           sed -i 's|ccflags-y := -Iinclude/linux|ccflags-y := -Iinclude/linux -I$$(srctree)/drivers/gpu/msm|' drivers/gpu/msm/Makefile
           # techpack Kbuild 自带 -Werror，压制 misleading-indentation 警告

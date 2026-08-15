@@ -1,0 +1,8 @@
+--- a/drivers/gpu/msm/Makefile
++++ b/drivers/gpu/msm/Makefile
+@@ -1,4 +1,4 @@
+-ccflags-y := -Iinclude/linux
++ccflags-y := -Iinclude/linux -I$(srctree)/drivers/gpu/msm
+ 
+ msm_kgsl_core-y = \
+ 	kgsl.o \

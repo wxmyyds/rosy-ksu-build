@@ -117,6 +117,8 @@ jobs:
 
       - name: Create Release
         if: ${{ github.event.inputs.create_release == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Fetch existing releases to find the next tag
           RELEASES=$(gh release list --repo ${{ github.repository }} --limit 100 --json tagName --jq '.[].tagName')

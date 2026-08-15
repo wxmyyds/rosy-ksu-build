@@ -34,5 +34,6 @@ sed -i '/ccflags-y += -D__CHECK_ENDIAN__/accflags-y += -I$(srctree)/drivers/blue
 sed -i '/^ccflags-y += -Idrivers\/media\/platform\/msm\/camera_v2\/$/accflags-y += -I$(srctree)/drivers/media/platform/msm/camera_v2/common' drivers/media/platform/msm/camera_v2/common/Makefile
 sed -i '/^ccflags-y += -Idrivers\/media\/platform\/msm\/camera_v2$/accflags-y += -I$(srctree)/drivers/media/platform/msm/camera_v2/isp' drivers/media/platform/msm/camera_v2/isp/Makefile
 sed -i '/^ccflags-y += -Idrivers\/media\/platform\/msm\/camera_v2\/sensor$/accflags-y += -I$(srctree)/drivers/media/platform/msm/camera_v2/sensor/io' drivers/media/platform/msm/camera_v2/sensor/io/Makefile
+sed -i '/^obj-\$(CONFIG_RNDIS_IPA) += rndis_ipa.o$/i\ccflags-y += -I$(srctree)/drivers/platform/msm/ipa/ipa_clients' drivers/platform/msm/ipa/ipa_clients/Makefile
 
 echo "[-] All patches applied successfully."

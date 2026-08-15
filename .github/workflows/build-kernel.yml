@@ -50,6 +50,8 @@ jobs:
           sed -i 's/^static DEFINE_MUTEX(sel_mutex);/DEFINE_MUTEX(sel_mutex);/' security/selinux/selinuxfs.c
           # security/selinux/ss/services.c: 移除 policy_rwlock 的 static
           sed -i 's/^static DEFINE_RWLOCK(policy_rwlock);/DEFINE_RWLOCK(policy_rwlock);/' security/selinux/ss/services.c
+          # ========== 摄像头驱动头文件包含路径修复 ==========
+          sed -i '/^ccflags-y += -Idrivers\/media\/platform\/msm\/camera_v2\/$/accflags-y += -I$(srctree)/drivers/media/platform/msm/camera_v2/common' drivers/media/platform/msm/camera_v2/common/Makefile
 
       - name: Install dependencies
         run: |
@@ -85,7 +87,7 @@ jobs:
           export OBJDUMP=llvm-objdump
           export STRIP=llvm-strip
           make rosy-perf_defconfig
-          make -j$(nproc) Image.gz-dtb KCFLAGS="-Wno-error=misleading-indentation" 2>&1 | tee build.log
+          make -j$(nproc) Image.gz-dtb KCFLAGS="-Wno-error=misleading-indentation -Wno-error=maybe-uninitialized" 2>&1 | tee build.log
 
       - name: Upload kernel
         uses: actions/upload-artifact@v4

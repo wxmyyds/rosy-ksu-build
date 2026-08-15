@@ -12,6 +12,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -75,8 +77,9 @@ jobs:
       - name: Extract kernel version
         working-directory: rosy
         run: |
-          strings arch/arm64/boot/Image.gz-dtb | grep -E '^[0-9]+\.[0-9]+\.[0-9]+.*-perf-' | head -1 > $GITHUB_WORKSPACE/kernel_version.txt
-          echo "KERNEL_VER=$(cat $GITHUB_WORKSPACE/kernel_version.txt)" >> $GITHUB_ENV
+          KERNEL_VER=$(grep -oP 'UTS_RELEASE "\K[^"]+' include/generated/utsrelease.h)
+          echo "$KERNEL_VER" > $GITHUB_WORKSPACE/kernel_version.txt
+          echo "KERNEL_VER=$KERNEL_VER" >> $GITHUB_ENV
 
       - name: Build AnyKernel3 package
         run: |

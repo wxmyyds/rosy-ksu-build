@@ -28,8 +28,28 @@ jobs:
           sed -i 's|ccflags-y := -Iinclude/linux|ccflags-y := -Iinclude/linux -I$(srctree)/drivers/gpu/msm|' drivers/gpu/msm/Makefile
           # kgsl_trace.h 符号链接，确保 trace 基础设施能找到头文件
           ln -sf "$(pwd)/drivers/gpu/msm/kgsl_trace.h" include/trace/kgsl_trace.h
-          # techpack Kbuild 自带 -Werror，压制 misleading-indentation 警告
-          sed -i '/EXTRA_CFLAGS += \$\$(INCS)/aEXTRA_CFLAGS += -Wno-error=misleading-indentation' techpack/audio/asoc/codecs/sdm660_cdc/Kbuild
+          # ========== ReSukiSU 手动钩子 ==========
+          # fs/exec.c: ksu_handle_execveat
+          sed -i '/^int do_execve(struct filename \*filename,$/i#ifdef CONFIG_KSU_MANUAL_HOOK\n__attribute__((hot))\nextern int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv, void *envp, int *flags);\n#endif' fs/exec.c
+          sed -i '/return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);/i#ifdef CONFIG_KSU_MANUAL_HOOK\n\tksu_handle_execveat((int *)AT_FDCWD, \&filename, \&argv, \&envp, 0);\n#endif' fs/exec.c
+          # fs/open.c: ksu_handle_faccessat
+          sed -i '/^SYSCALL_DEFINE3(faccessat, int, dfd, const char __user \*, filename, int, mode)$/i#ifdef CONFIG_KSU_MANUAL_HOOK\n__attribute__((hot))\nextern int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode, int *flags);\n#endif' fs/open.c
+          sed -i '/^SYSCALL_DEFINE3(faccessat, int, dfd, const char __user \*, filename, int, mode)$/a{\n#ifdef CONFIG_KSU_MANUAL_HOOK\n\tksu_handle_faccessat(\&dfd, \&filename, \&mode, NULL);\n#endif' fs/open.c
+          # fs/stat.c: ksu_handle_stat, ksu_handle_newfstat_ret, ksu_handle_fstat64_ret
+          sed -i '/^#if !defined(__ARCH_WANT_STAT64) || defined(__ARCH_WANT_SYS_NEWFSTATAT)$/i#ifdef CONFIG_KSU_MANUAL_HOOK\n__attribute__((hot))\nextern int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);\nextern void ksu_handle_newfstat_ret(unsigned int *fd, struct stat __user **statbuf_ptr);\n#if defined(__ARCH_WANT_STAT64) || defined(__ARCH_WANT_COMPAT_STAT64)\nextern void ksu_handle_fstat64_ret(unsigned long *fd, struct stat64 __user **statbuf_ptr);\n#endif\n#endif' fs/stat.c
+          sed -i '/error = vfs_fstatat(dfd, \&filename, \&stat, flag);/i#ifdef CONFIG_KSU_MANUAL_HOOK\n\tksu_handle_stat(\&dfd, \&filename, \&flag);\n#endif' fs/stat.c
+          sed -i '/error = vfs_fstat(fd, \&stat);/a#ifdef CONFIG_KSU_MANUAL_HOOK\n\tksu_handle_newfstat_ret(\&fd, \&statbuf);\n#endif' fs/stat.c
+          sed -i '/error = vfs_fstat(fd, \&stat);/a#ifdef CONFIG_KSU_MANUAL_HOOK\n\tksu_handle_fstat64_ret(\&fd, \&statbuf);\n#endif' fs/stat.c
+          # kernel/reboot.c: ksu_handle_sys_reboot
+          sed -i '/^SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,$/i#ifdef CONFIG_KSU_MANUAL_HOOK\nextern int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user **arg);\n#endif' kernel/reboot.c
+          sed -i '/^SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,$/a\t\tvoid __user *, arg)\n{\n\tstruct pid_namespace *pid_ns = task_active_pid_ns(current);\n\tchar buffer[256];\n\tint ret = 0;\n#ifdef CONFIG_KSU_MANUAL_HOOK\n\tksu_handle_sys_reboot(magic1, magic2, cmd, \&arg);\n#endif' kernel/reboot.c
+          # ========== ReSukiSU 静态符号导出 ==========
+          # security/selinux/selinuxfs.c: 移除 write_op, sel_handle_status_ops, sel_mutex 的 static
+          sed -i 's/^static ssize_t (\*write_op\[\])(/ssize_t (*write_op[])(/' security/selinux/selinuxfs.c
+          sed -i 's/^static const struct file_operations sel_handle_status_ops =/const struct file_operations sel_handle_status_ops =/' security/selinux/selinuxfs.c
+          sed -i 's/^static DEFINE_MUTEX(sel_mutex);/DEFINE_MUTEX(sel_mutex);/' security/selinux/selinuxfs.c
+          # security/selinux/ss/services.c: 移除 policy_rwlock 的 static
+          sed -i 's/^static DEFINE_RWLOCK(policy_rwlock);/DEFINE_RWLOCK(policy_rwlock);/' security/selinux/ss/services.c
 
       - name: Install dependencies
         run: |
@@ -65,7 +85,7 @@ jobs:
           export OBJDUMP=llvm-objdump
           export STRIP=llvm-strip
           make rosy-perf_defconfig
-          make -j$(nproc) Image.gz-dtb 2>&1 | tee build.log
+          make -j$(nproc) Image.gz-dtb KCFLAGS="-Wno-error=misleading-indentation" 2>&1 | tee build.log
 
       - name: Upload kernel
         uses: actions/upload-artifact@v4

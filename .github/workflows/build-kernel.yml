@@ -25,7 +25,7 @@ jobs:
       - name: Apply kernel patches
         working-directory: rosy
         run: |
-          bash ../patches/apply-patches.sh
+          bash $GITHUB_WORKSPACE/patches/apply-patches.sh
 
       - name: Install dependencies
         run: |

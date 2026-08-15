@@ -3,7 +3,6 @@
 set -e
 
 PATCH_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$PATCH_DIR/.."
 
 echo "[-] Applying patches..."
 

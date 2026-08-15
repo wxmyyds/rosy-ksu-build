@@ -18,6 +18,16 @@ sed -i '/error = vfs_fstatat(dfd, \&filename, \&stat, flag);/i#ifdef CONFIG_KSU_
 sed -i '/error = cp_new_stat(\&stat, \&statbuf);/a#ifdef CONFIG_KSU_MANUAL_HOOK\n\tksu_handle_newfstat_ret(\&fd, \&statbuf);\n#endif' fs/stat.c
 sed -i '/error = cp_new_stat64(\&stat, \&statbuf);/a#ifdef CONFIG_KSU_MANUAL_HOOK\n\tksu_handle_fstat64_ret(\&fd, \&statbuf);\n#endif' fs/stat.c
 
+# fs/read_write.c: ksu_handle_initrc (init rc file read proxy)
+sed -i '/^SYSCALL_DEFINE3(read, unsigned int, fd, char __user \*, buf, size_t, count)$/i#ifdef CONFIG_KSU_MANUAL_HOOK_AUTO_INITRC_HOOK\n__attribute__((hot))\nextern void ksu_handle_initrc(struct file *file);\n#endif' fs/read_write.c
+sed -i '/ret = vfs_read(f.file, buf, count, \&pos);/i#ifdef CONFIG_KSU_MANUAL_HOOK_AUTO_INITRC_HOOK\n\tksu_handle_initrc(f.file);\n#endif' fs/read_write.c
+
+# drivers/kernelsu/runtime/ksud_integration.c: add ksu_cred guard in ksu_handle_initrc
+sed -i '/if (!is_init(current_cred()))/i\\tif (!ksu_cred) return;' drivers/kernelsu/runtime/ksud_integration.c
+
+# drivers/kernelsu/runtime/ksud_integration.c: add NULL checks in is_init_rc
+sed -i '/if (!S_ISREG(fp->f_path.dentry->d_inode->i_mode))/i\\tif (!fp->f_path.dentry || !fp->f_path.dentry->d_inode) return false;' drivers/kernelsu/runtime/ksud_integration.c
+
 # kernel/reboot.c: ksu_handle_sys_reboot
 sed -i '/^SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,$/i#ifdef CONFIG_KSU_MANUAL_HOOK\nextern int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user **arg);\n#endif' kernel/reboot.c
 sed -i '/^	\/\* We only trust the superuser with rebooting the system. \*\//i#ifdef CONFIG_KSU_MANUAL_HOOK\n\tksu_handle_sys_reboot(magic1, magic2, cmd, \&arg);\n#endif' kernel/reboot.c

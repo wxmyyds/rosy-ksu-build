@@ -28,8 +28,13 @@ jobs:
       - name: Setup AOSP clang toolchain
         run: |
           mkdir -p toolchain && cd toolchain
-          wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r498229b.tar.gz
-          tar -xf clang-r498229b.tar.gz && rm clang-r498229b.tar.gz
+          git clone --depth=1 --filter=blob:none --sparse \
+            https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 \
+            clang
+          cd clang
+          git sparse-checkout set clang-r498229b
+          echo "CLANG_DIR=$(pwd)" >> $GITHUB_ENV
+          cd ..
           git clone --depth=1 -q https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9
           git clone --depth=1 -q https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9
           echo "TOOLCHAIN_DIR=$(pwd)" >> $GITHUB_ENV
@@ -37,7 +42,7 @@ jobs:
       - name: Build kernel
         working-directory: rosy
         run: |
-          export PATH="${{ env.TOOLCHAIN_DIR }}/clang-r498229b/bin:${{ env.TOOLCHAIN_DIR }}/aarch64-linux-android-4.9/bin:${{ env.TOOLCHAIN_DIR }}/arm-linux-androideabi-4.9/bin:$PATH"
+          export PATH="${{ env.CLANG_DIR }}/clang-r498229b/bin:${{ env.TOOLCHAIN_DIR }}/aarch64-linux-android-4.9/bin:${{ env.TOOLCHAIN_DIR }}/arm-linux-androideabi-4.9/bin:$PATH"
           export ARCH=arm64
           export CROSS_COMPILE=${{ env.TOOLCHAIN_DIR }}/aarch64-linux-android-4.9/bin/aarch64-linux-android-
           export CROSS_COMPILE_ARM32=${{ env.TOOLCHAIN_DIR }}/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-

@@ -18,8 +18,9 @@ jobs:
           curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash
           echo "CONFIG_KSU=y" >> arch/arm64/configs/rosy-perf_defconfig
           echo "CONFIG_KSU_MANUAL_HOOK=y" >> arch/arm64/configs/rosy-perf_defconfig
-          # AOSP clang 不支持 -fstack-protector-strong
+          # AOSP clang 兼容性修复
           echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> arch/arm64/configs/rosy-perf_defconfig
+          echo "# CONFIG_BTFM_SLIM is not set" >> arch/arm64/configs/rosy-perf_defconfig
 
       - name: Install dependencies
         run: |
@@ -54,6 +55,7 @@ jobs:
           export OBJCOPY=llvm-objcopy
           export OBJDUMP=llvm-objdump
           export STRIP=llvm-strip
+          export KBUILD_CFLAGS="-Wno-error=misleading-indentation"
 
           make rosy-perf_defconfig
           make -j$(nproc) Image.gz-dtb 2>&1 | tee build.log

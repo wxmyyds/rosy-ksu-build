@@ -2,6 +2,12 @@ name: Build rosy kernel with ReSukiSU
 
 on:
   workflow_dispatch:
+    inputs:
+      create_release:
+        description: '创建 GitHub Release（勾选 = 发版，不勾选 = 仅构建）'
+        required: true
+        default: false
+        type: boolean
 
 jobs:
   build:
@@ -66,6 +72,12 @@ jobs:
           make rosy-perf_defconfig
           make -j$(nproc) Image.gz-dtb KCFLAGS="-Wno-error=misleading-indentation -Wno-error=maybe-uninitialized -Wno-error=address" 2>&1 | tee build.log
 
+      - name: Extract kernel version
+        working-directory: rosy
+        run: |
+          strings arch/arm64/boot/Image.gz-dtb | grep -E '^[0-9]+\.[0-9]+\.[0-9]+.*-perf-' | head -1 > $GITHUB_WORKSPACE/kernel_version.txt
+          echo "KERNEL_VER=$(cat $GITHUB_WORKSPACE/kernel_version.txt)" >> $GITHUB_ENV
+
       - name: Build AnyKernel3 package
         run: |
           git clone --depth=1 https://github.com/osm0sis/AnyKernel3 /tmp/ak3
@@ -101,3 +113,42 @@ jobs:
             rosy/arch/arm64/boot/Image.gz-dtb
             rosy/build.log
             rosy-ksu-ak3.zip
+            kernel_version.txt
+
+      - name: Create Release
+        if: ${{ github.event.inputs.create_release == 'true' }}
+        run: |
+          # Fetch existing releases to find the next tag
+          RELEASES=$(gh release list --repo ${{ github.repository }} --limit 100 --json tagName --jq '.[].tagName')
+          MAX_NUM=0
+          for tag in $RELEASES; do
+            NUM=$(echo "$tag" | grep -oP '^v\K\d+' || echo 0)
+            if [ "$NUM" -gt "$MAX_NUM" ]; then
+              MAX_NUM=$NUM
+            fi
+          done
+          NEXT_NUM=$((MAX_NUM + 1))
+          TAG="v$NEXT_NUM"
+          KERNEL_VER=$(cat kernel_version.txt)
+          RELEASE_NAME="ReSukiSU-rosy-$KERNEL_VER-$TAG"
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
+
+      - name: Publish Release
+        if: ${{ github.event.inputs.create_release == 'true' }}
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ env.TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          body: |
+            ## ReSukiSU for Xiaomi Redmi 5 (rosy)
+
+            **内核版本:** ${{ env.KERNEL_VER }}
+            **构建时间:** ${{ github.event.repository.updated_at }}
+
+            ### 刷写方法
+            1. 下载 `rosy-ksu-ak3.zip`
+            2. 在 ReSukiSU 管理器中选择 AnyKernel3 刷写
+            3. 重启
+          artifacts: rosy-ksu-ak3.zip
+          token: ${{ secrets.GITHUB_TOKEN }}

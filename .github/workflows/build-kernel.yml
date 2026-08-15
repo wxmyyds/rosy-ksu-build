@@ -21,7 +21,10 @@ jobs:
           # AOSP clang 兼容性修复
           echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> arch/arm64/configs/rosy-perf_defconfig
           echo "# CONFIG_BTFM_SLIM is not set" >> arch/arm64/configs/rosy-perf_defconfig
-          echo "# CONFIG_MSM_KGSL is not set" >> arch/arm64/configs/rosy-perf_defconfig
+          # clang 兼容性修复：kgsl trace 头文件包含路径
+          sed -i 's|ccflags-y := -Iinclude/linux|ccflags-y := -Iinclude/linux -I$$(srctree)/drivers/gpu/msm|' drivers/gpu/msm/Makefile
+          # techpack Kbuild 自带 -Werror，压制 misleading-indentation 警告
+          sed -i 's|EXTRA_CFLAGS += $$(INCS)|EXTRA_CFLAGS += $$(INCS)\nEXTRA_CFLAGS += -Wno-error=misleading-indentation|' techpack/audio/asoc/codecs/sdm660_cdc/Kbuild
 
       - name: Install dependencies
         run: |
@@ -57,7 +60,7 @@ jobs:
           export OBJDUMP=llvm-objdump
           export STRIP=llvm-strip
           make rosy-perf_defconfig
-          make -j$(nproc) Image.gz-dtb KCFLAGS="-Wno-error=misleading-indentation" 2>&1 | tee build.log
+          make -j$(nproc) Image.gz-dtb 2>&1 | tee build.log
 
       - name: Upload kernel
         uses: actions/upload-artifact@v4

@@ -18,6 +18,10 @@ sed -i '/error = vfs_fstatat(dfd, \&filename, \&stat, flag);/i#ifdef CONFIG_KSU_
 sed -i '/error = cp_new_stat(\&stat, \&statbuf);/a#ifdef CONFIG_KSU_MANUAL_HOOK\n\tksu_handle_newfstat_ret(\&fd, \&statbuf);\n#endif' fs/stat.c
 sed -i '/error = cp_new_stat64(\&stat, \&statbuf);/a#ifdef CONFIG_KSU_MANUAL_HOOK\n\tksu_handle_fstat64_ret(\&fd, \&statbuf);\n#endif' fs/stat.c
 
+# fs/read_write.c: ksu_handle_initrc (init rc file read proxy)
+sed -i '/^SYSCALL_DEFINE3(read, unsigned int, fd, char __user \*, buf, size_t, count)$/i#ifdef CONFIG_KSU_MANUAL_HOOK_AUTO_INITRC_HOOK\n__attribute__((hot))\nextern void ksu_handle_initrc(struct file *file);\n#endif' fs/read_write.c
+sed -i '/ret = vfs_read(f.file, buf, count, \&pos);/i#ifdef CONFIG_KSU_MANUAL_HOOK_AUTO_INITRC_HOOK\n\tksu_handle_initrc(f.file);\n#endif' fs/read_write.c
+
 # kernel/reboot.c: ksu_handle_sys_reboot
 sed -i '/^SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,$/i#ifdef CONFIG_KSU_MANUAL_HOOK\nextern int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user **arg);\n#endif' kernel/reboot.c
 sed -i '/^	\/\* We only trust the superuser with rebooting the system. \*\//i#ifdef CONFIG_KSU_MANUAL_HOOK\n\tksu_handle_sys_reboot(magic1, magic2, cmd, \&arg);\n#endif' kernel/reboot.c
@@ -37,5 +41,10 @@ sed -i '/^ccflags-y += -Idrivers\/media\/platform\/msm\/camera_v2\/sensor$/accfl
 sed -i '/^obj-\$(CONFIG_RNDIS_IPA) += rndis_ipa.o$/i\ccflags-y += -I$(srctree)/drivers/platform/msm/ipa/ipa_clients' drivers/platform/msm/ipa/ipa_clients/Makefile
 sed -i '/^obj-\$(CONFIG_IPA) += ipat.o$/i\ccflags-y += -I$(srctree)/drivers/platform/msm/ipa/ipa_v2' drivers/platform/msm/ipa/ipa_v2/Makefile
 sed -i '/^ccflags-y.*+= -I\$(srctree)\/drivers\/usb\/gadget\/udc$/s/$/ -I$(srctree)\/drivers\/usb\/gadget/' drivers/usb/gadget/Makefile
+
+# drivers/kernelsu/policy/allowlist.c: remove override_creds(ksu_cred) in save (ENOKEY fix)
+sed -i '/^    const struct cred \*saved = override_creds(ksu_cred);$/d' drivers/kernelsu/policy/allowlist.c
+sed -i '/^        revert_creds(saved);$/d' drivers/kernelsu/policy/allowlist.c
+sed -i '/^    revert_creds(saved);$/d' drivers/kernelsu/policy/allowlist.c
 
 echo "[-] All patches applied successfully."

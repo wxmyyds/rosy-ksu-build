@@ -74,7 +74,7 @@ jobs:
           echo '## osm0sis @ xda-developers' >> /tmp/ak3/anykernel.sh
           echo '' >> /tmp/ak3/anykernel.sh
           echo '### AnyKernel setup' >> /tmp/ak3/anykernel.sh
-          echo "properties() {" >> /tmp/ak3/anykernel.sh
+          echo "properties() { '" >> /tmp/ak3/anykernel.sh
           echo "kernel.string=ReSukiSU for Xiaomi Redmi 5 (rosy) by wxmyyds" >> /tmp/ak3/anykernel.sh
           echo "do.devicecheck=1" >> /tmp/ak3/anykernel.sh
           echo "device.name1=rosy" >> /tmp/ak3/anykernel.sh

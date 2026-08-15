@@ -70,27 +70,25 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/osm0sis/AnyKernel3 /tmp/ak3
           cp rosy/arch/arm64/boot/Image.gz-dtb /tmp/ak3/Image.gz-dtb
-          cat > /tmp/ak3/anykernel.sh << 'EOF'
-### AnyKernel3 Ramdisk Mod Script
-## osm0sis @ xda-developers
-
-### AnyKernel setup
-properties() { '
-kernel.string=ReSukiSU for Xiaomi Redmi 5 (rosy) by wxmyyds
-do.devicecheck=1
-device.name1=rosy
-do.cleanup=1
-'; }
-
-BLOCK=/dev/block/bootdevice/by-name/boot;
-is_slot_device=auto;
-no_block_display=1;
-
-. tools/ak3-core.sh;
-
-split_boot;
-flash_boot;
-EOF
+          echo '### AnyKernel3 Ramdisk Mod Script' > /tmp/ak3/anykernel.sh
+          echo '## osm0sis @ xda-developers' >> /tmp/ak3/anykernel.sh
+          echo '' >> /tmp/ak3/anykernel.sh
+          echo '### AnyKernel setup' >> /tmp/ak3/anykernel.sh
+          echo "properties() {" >> /tmp/ak3/anykernel.sh
+          echo "kernel.string=ReSukiSU for Xiaomi Redmi 5 (rosy) by wxmyyds" >> /tmp/ak3/anykernel.sh
+          echo "do.devicecheck=1" >> /tmp/ak3/anykernel.sh
+          echo "device.name1=rosy" >> /tmp/ak3/anykernel.sh
+          echo "do.cleanup=1" >> /tmp/ak3/anykernel.sh
+          echo "'; }" >> /tmp/ak3/anykernel.sh
+          echo '' >> /tmp/ak3/anykernel.sh
+          echo 'BLOCK=/dev/block/bootdevice/by-name/boot;' >> /tmp/ak3/anykernel.sh
+          echo 'is_slot_device=auto;' >> /tmp/ak3/anykernel.sh
+          echo 'no_block_display=1;' >> /tmp/ak3/anykernel.sh
+          echo '' >> /tmp/ak3/anykernel.sh
+          echo '. tools/ak3-core.sh;' >> /tmp/ak3/anykernel.sh
+          echo '' >> /tmp/ak3/anykernel.sh
+          echo 'split_boot;' >> /tmp/ak3/anykernel.sh
+          echo 'flash_boot;' >> /tmp/ak3/anykernel.sh
           cd /tmp/ak3
           rm -rf .git LICENSE README.md .github modules patch ramdisk
           zip -r9 $GITHUB_WORKSPACE/rosy-ksu-ak3.zip .

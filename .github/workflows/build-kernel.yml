@@ -18,6 +18,8 @@ jobs:
           curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash
           echo "CONFIG_KSU=y" >> arch/arm64/configs/rosy-perf_defconfig
           echo "CONFIG_KSU_MANUAL_HOOK=y" >> arch/arm64/configs/rosy-perf_defconfig
+          # AOSP clang 不支持 -fstack-protector-strong
+          echo "CONFIG_CC_STACKPROTECTOR_NONE=y" >> arch/arm64/configs/rosy-perf_defconfig
 
       - name: Install dependencies
         run: |

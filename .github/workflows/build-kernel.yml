@@ -25,7 +25,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y bc bison flex libssl-dev python3 \
-            python3-pip cpio rsync device-tree-compiler
+            python3-pip cpio rsync device-tree-compiler \
+            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
 
       - name: Setup AOSP clang toolchain
         run: |
@@ -36,18 +37,14 @@ jobs:
           cd clang
           git sparse-checkout set clang-r498229b
           echo "CLANG_DIR=$(pwd)" >> $GITHUB_ENV
-          cd ..
-          git clone --depth=1 -q https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9
-          git clone --depth=1 -q https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9
-          echo "TOOLCHAIN_DIR=$(pwd)" >> $GITHUB_ENV
 
       - name: Build kernel
         working-directory: rosy
         run: |
-          export PATH="${{ env.CLANG_DIR }}/clang-r498229b/bin:${{ env.TOOLCHAIN_DIR }}/aarch64-linux-android-4.9/bin:${{ env.TOOLCHAIN_DIR }}/arm-linux-androideabi-4.9/bin:$PATH"
+          export PATH="${{ env.CLANG_DIR }}/clang-r498229b/bin:/usr/bin:$PATH"
           export ARCH=arm64
-          export CROSS_COMPILE=${{ env.TOOLCHAIN_DIR }}/aarch64-linux-android-4.9/bin/aarch64-linux-android-
-          export CROSS_COMPILE_ARM32=${{ env.TOOLCHAIN_DIR }}/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
           export CC=clang
           export CLANG_TRIPLE=aarch64-linux-gnu-
           export AS=clang

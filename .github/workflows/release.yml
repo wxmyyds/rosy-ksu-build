@@ -1,0 +1,125 @@
+name: Release from existing build
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '自定义 tag（留空 = 自动递增 v1/v2/...）'
+        required: false
+        default: ''
+      run_id:
+        description: '指定构建 run ID（留空 = 使用最近一次成功构建）'
+        required: false
+        default: ''
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Resolve build run ID
+        id: run
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -n "${{ github.event.inputs.run_id }}" ]; then
+            RUN_ID="${{ github.event.inputs.run_id }}"
+            echo "Using provided run_id: $RUN_ID"
+          else
+            RUN_ID=$(gh run list --repo ${{ github.repository }} --workflow=build-kernel.yml --status=success --limit=1 --json databaseId --jq '.[0].databaseId')
+            echo "Using latest successful build run: $RUN_ID"
+          fi
+          if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
+            echo "::error::No successful build found. Run the build workflow first."
+            exit 1
+          fi
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+
+      - name: Download build artifact
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download $RUN_ID --repo ${{ github.repository }} --name rosy-kernel-resukisu --dir artifacts
+
+      - name: Read build metadata
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          KERNEL_VER=$(cat artifacts/kernel_version.txt)
+          echo "KERNEL_VER=$KERNEL_VER" >> $GITHUB_ENV
+          echo "KERNEL_VER=$KERNEL_VER"
+          read KSU_VER KSU_SHA KSU_TAG <<< "$(cat artifacts/ksu_version.txt)"
+          echo "KSU_VER=$KSU_VER" >> $GITHUB_ENV
+          echo "KSU_VER=$KSU_VER"
+          echo "KSU_SHA=$KSU_SHA" >> $GITHUB_ENV
+          echo "KSU_SHA=$KSU_SHA"
+          echo "KSU_TAG=$KSU_TAG" >> $GITHUB_ENV
+          echo "KSU_TAG=$KSU_TAG"
+          BUILD_TIME_UTC=$(gh run view $RUN_ID --repo ${{ github.repository }} --json createdAt --jq '.createdAt')
+          BUILD_TIME=$(TZ=CET date -d "$BUILD_TIME_UTC" "+%Y-%m-%d %H:%M:%S")
+          echo "BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
+          echo "BUILD_TIME=$BUILD_TIME"
+
+      - name: Resolve matching manager build
+        id: manager
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          MANAGER_RUN=$(gh run list --repo ReSukiSU/ReSukiSU --workflow=build-manager.yml \
+            --commit "$KSU_SHA" --status=success --json databaseId --jq '.[0].databaseId')
+          if [ -n "$MANAGER_RUN" ] && [ "$MANAGER_RUN" != "null" ]; then
+            MANAGER_URL="https://nightly.link/ReSukiSU/ReSukiSU/$MANAGER_RUN/Manager-release.zip"
+            echo "Found matching manager build for $KSU_SHA: $MANAGER_RUN"
+          else
+            MANAGER_URL="https://nightly.link/ReSukiSU/ReSukiSU/workflows/build-manager/main/Manager-release.zip"
+            echo "No manager build for $KSU_SHA, falling back to latest main"
+          fi
+          echo "MANAGER_URL=$MANAGER_URL" >> $GITHUB_ENV
+          echo "MANAGER_URL=$MANAGER_URL"
+
+      - name: Compute release tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+            echo "Using provided tag: $TAG"
+          else
+            RELEASES=$(gh release list --repo ${{ github.repository }} --limit 100 --json tagName --jq '.[].tagName')
+            MAX_NUM=0
+            for t in $RELEASES; do
+              NUM=$(echo "$t" | grep -oP '^v\K\d+' || echo 0)
+              if [ "$NUM" -gt "$MAX_NUM" ]; then
+                MAX_NUM=$NUM
+              fi
+            done
+            TAG="v$((MAX_NUM + 1))"
+            echo "Auto-incremented tag: $TAG"
+          fi
+          RELEASE_NAME="ReSukiSU-rosy-$KERNEL_VER-$TAG"
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
+
+      - name: Publish Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ env.TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          body: |
+            - **Time**: ${{ env.BUILD_TIME }} # CET
+
+            - **Codename**: rosy
+
+            <br>
+
+            - **[Kernel](https://github.com/baunilla/android_kernel_xiaomi_rosy) Version**: ${{ env.KERNEL_VER }}
+            - **[KernelSU](https://github.com/ReSukiSU/ReSukiSU) Version**: ${{ env.KSU_VER }}
+
+            <br>
+
+            - **ReSukiSU Manager**: [ReSukiSU Manager ({{ env.KSU_TAG }} {{ env.KSU_VER }})]({{ env.MANAGER_URL }})
+          artifacts: artifacts/rosy-ksu-ak3.zip
+          token: ${{ secrets.GITHUB_TOKEN }}

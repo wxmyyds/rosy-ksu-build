@@ -74,7 +74,7 @@ jobs:
           MANAGER_RUN=$(gh run list --repo ReSukiSU/ReSukiSU --workflow=build-manager.yml \
             --commit "$KSU_SHA" --status=success --json databaseId --jq '.[0].databaseId')
           if [ -n "$MANAGER_RUN" ] && [ "$MANAGER_RUN" != "null" ]; then
-            MANAGER_URL="https://nightly.link/ReSukiSU/ReSukiSU/$MANAGER_RUN/Manager-release.zip"
+            MANAGER_URL="https://nightly.link/ReSukiSU/ReSukiSU/actions/runs/$MANAGER_RUN/Manager-release.zip"
             echo "Found matching manager build for $KSU_SHA: $MANAGER_RUN"
           else
             MANAGER_URL="https://nightly.link/ReSukiSU/ReSukiSU/workflows/build-manager/main/Manager-release.zip"

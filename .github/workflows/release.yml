@@ -47,6 +47,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          if [ ! -s artifacts/ksu_version.txt ]; then
+            echo "::error::ksu_version.txt 缺失。该构建早于 KSU 元数据功能，请先重新跑一次 Build 工作流。"
+            exit 1
+          fi
           KERNEL_VER=$(cat artifacts/kernel_version.txt)
           echo "KERNEL_VER=$KERNEL_VER" >> $GITHUB_ENV
           echo "KERNEL_VER=$KERNEL_VER"
@@ -58,7 +62,7 @@ jobs:
           echo "KSU_TAG=$KSU_TAG" >> $GITHUB_ENV
           echo "KSU_TAG=$KSU_TAG"
           BUILD_TIME_UTC=$(gh run view $RUN_ID --repo ${{ github.repository }} --json createdAt --jq '.createdAt')
-          BUILD_TIME=$(TZ=CET date -d "$BUILD_TIME_UTC" "+%Y-%m-%d %H:%M:%S")
+          BUILD_TIME=$(TZ=Asia/Shanghai date -d "$BUILD_TIME_UTC" "+%Y-%m-%d %H:%M:%S")
           echo "BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
           echo "BUILD_TIME=$BUILD_TIME"
 
@@ -109,7 +113,7 @@ jobs:
           tag: ${{ env.TAG }}
           name: ${{ env.RELEASE_NAME }}
           body: |
-            - **Time**: ${{ env.BUILD_TIME }} # CET
+            - **Time**: ${{ env.BUILD_TIME }} # UTC+8
 
             - **Codename**: rosy
 
@@ -120,6 +124,6 @@ jobs:
 
             <br>
 
-            - **ReSukiSU Manager**: [ReSukiSU Manager ({{ env.KSU_TAG }} {{ env.KSU_VER }})]({{ env.MANAGER_URL }})
+            - **ReSukiSU Manager**: [ReSukiSU Manager (${{ env.KSU_TAG }} ${{ env.KSU_VER }})](${{ env.MANAGER_URL }})
           artifacts: artifacts/rosy-ksu-ak3.zip
           token: ${{ secrets.GITHUB_TOKEN }}

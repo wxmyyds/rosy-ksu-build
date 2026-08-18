@@ -43,4 +43,7 @@ sed -i '/^    const struct cred \*saved = override_creds(ksu_cred);$/d' drivers/
 sed -i '/^        revert_creds(saved);$/d' drivers/kernelsu/policy/allowlist.c
 sed -i '/^    revert_creds(saved);$/d' drivers/kernelsu/policy/allowlist.c
 
+# arch/arm64/kernel/process.c: %pS format warning (unsigned long passed as void *)
+sed -i 's|printk("\\n%s: %pS:\\n", name, addr);|printk("\\n%s: %pS:\\n", name, (void *)addr);|' arch/arm64/kernel/process.c
+
 echo "[-] All patches applied successfully."

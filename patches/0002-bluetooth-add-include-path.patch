@@ -1,6 +1,9 @@
+diff --git a/drivers/bluetooth/Makefile b/drivers/bluetooth/Makefile
+index 122b1843e..b64cef911 100644
 --- a/drivers/bluetooth/Makefile
 +++ b/drivers/bluetooth/Makefile
-@@ -38,3 +38,4 @@ hci_uart-objs				:= $(hci_uart-y)
+@@ -48,3 +48,4 @@ hci_uart-$(CONFIG_BT_HCIUART_MRVL)	+= hci_mrvl.o
+ hci_uart-objs				:= $(hci_uart-y)
  
  ccflags-y += -D__CHECK_ENDIAN__
 +ccflags-y += -I$(srctree)/drivers/bluetooth

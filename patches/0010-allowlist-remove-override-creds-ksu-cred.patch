@@ -1,6 +1,6 @@
---- a/drivers/kernelsu/policy/allowlist.c
-+++ b/drivers/kernelsu/policy/allowlist.c
-@@ -464,13 +464,11 @@ void do_persistent_allow_list(void *unused)
+--- a/KernelSU/kernel/policy/allowlist.c
++++ b/KernelSU/kernel/policy/allowlist.c
+@@ -464,11 +464,9 @@
      loff_t off = 0;
      int i;
  
@@ -12,11 +12,11 @@
          return;
      }
  
-     // store magic and version
-@@ -486,7 +484,6 @@ void do_persistent_allow_list(void *unused)
+@@ -493,7 +491,6 @@
      mutex_unlock(&allowlist_mutex);
  
  out:
 -    revert_creds(saved);
      filp_close(fp, 0);
  }
+ 

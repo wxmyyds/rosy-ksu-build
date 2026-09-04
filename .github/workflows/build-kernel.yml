@@ -3,9 +3,20 @@ name: Build rosy kernel with ReSukiSU
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+env:
+  CLANG_VERSION: clang-r498229b
+
+concurrency:
+  group: build-kernel-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
 
@@ -28,7 +39,7 @@ jobs:
       - name: Apply kernel patches
         working-directory: rosy
         run: |
-          bash $GITHUB_WORKSPACE/patches/apply-patches.sh
+          git apply $GITHUB_WORKSPACE/patches/*.patch
 
       - name: Install dependencies
         run: |
@@ -44,13 +55,14 @@ jobs:
             https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 \
             clang
           cd clang
-          git sparse-checkout set clang-r498229b
+          git sparse-checkout set "${{ env.CLANG_VERSION }}"
           echo "CLANG_DIR=$(pwd)" >> $GITHUB_ENV
 
       - name: Build kernel
         working-directory: rosy
         run: |
-          export PATH="${{ env.CLANG_DIR }}/clang-r498229b/bin:/usr/bin:$PATH"
+          set -o pipefail
+          export PATH="${{ env.CLANG_DIR }}/${{ env.CLANG_VERSION }}/bin:/usr/bin:$PATH"
           export ARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
           export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
@@ -88,25 +100,7 @@ jobs:
         run: |
           git clone --depth=1 https://github.com/osm0sis/AnyKernel3 /tmp/ak3
           cp rosy/arch/arm64/boot/Image.gz-dtb /tmp/ak3/Image.gz-dtb
-          echo '### AnyKernel3 Ramdisk Mod Script' > /tmp/ak3/anykernel.sh
-          echo '## osm0sis @ xda-developers' >> /tmp/ak3/anykernel.sh
-          echo '' >> /tmp/ak3/anykernel.sh
-          echo '### AnyKernel setup' >> /tmp/ak3/anykernel.sh
-          echo "properties() { '" >> /tmp/ak3/anykernel.sh
-          echo "kernel.string=ReSukiSU for Xiaomi Redmi 5 (rosy) by wxmyyds" >> /tmp/ak3/anykernel.sh
-          echo "do.devicecheck=1" >> /tmp/ak3/anykernel.sh
-          echo "device.name1=rosy" >> /tmp/ak3/anykernel.sh
-          echo "do.cleanup=1" >> /tmp/ak3/anykernel.sh
-          echo "'; }" >> /tmp/ak3/anykernel.sh
-          echo '' >> /tmp/ak3/anykernel.sh
-          echo 'BLOCK=/dev/block/bootdevice/by-name/boot;' >> /tmp/ak3/anykernel.sh
-          echo 'is_slot_device=auto;' >> /tmp/ak3/anykernel.sh
-          echo 'no_block_display=1;' >> /tmp/ak3/anykernel.sh
-          echo '' >> /tmp/ak3/anykernel.sh
-          echo '. tools/ak3-core.sh;' >> /tmp/ak3/anykernel.sh
-          echo '' >> /tmp/ak3/anykernel.sh
-          echo 'split_boot;' >> /tmp/ak3/anykernel.sh
-          echo 'flash_boot;' >> /tmp/ak3/anykernel.sh
+          cp "$GITHUB_WORKSPACE/ak3/anykernel.sh" /tmp/ak3/anykernel.sh
           cd /tmp/ak3
           rm -rf .git LICENSE README.md .github modules patch ramdisk
           zip -r9 $GITHUB_WORKSPACE/rosy-ksu-ak3.zip .
@@ -115,6 +109,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rosy-kernel-resukisu
+          retention-days: 30
           path: |
             rosy/arch/arm64/boot/Image.gz-dtb
             rosy/build.log

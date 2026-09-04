@@ -1,3 +1,5 @@
+diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
+index b818410d2..ea2f30227 100644
 --- a/security/selinux/ss/services.c
 +++ b/security/selinux/ss/services.c
 @@ -76,7 +76,7 @@ int selinux_policycap_netpeer;

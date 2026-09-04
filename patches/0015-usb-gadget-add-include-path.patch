@@ -1,0 +1,13 @@
+diff --git a/drivers/usb/gadget/Makefile b/drivers/usb/gadget/Makefile
+index 2bde573d0..fb08249d2 100644
+--- a/drivers/usb/gadget/Makefile
++++ b/drivers/usb/gadget/Makefile
+@@ -3,7 +3,7 @@
+ #
+ subdir-ccflags-$(CONFIG_USB_GADGET_DEBUG)	:= -DDEBUG
+ subdir-ccflags-$(CONFIG_USB_GADGET_VERBOSE)	+= -DVERBOSE_DEBUG
+-ccflags-y				+= -I$(srctree)/drivers/usb/gadget/udc
++ccflags-y				+= -I$(srctree)/drivers/usb/gadget/udc -I$(srctree)/drivers/usb/gadget
+ 
+ obj-$(CONFIG_USB_LIBCOMPOSITE)	+= libcomposite.o
+ libcomposite-y			:= usbstring.o config.o epautoconf.o

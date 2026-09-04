@@ -1,7 +1,8 @@
+diff --git a/fs/open.c b/fs/open.c
+index f2b82c462..a2d938ded 100644
 --- a/fs/open.c
 +++ b/fs/open.c
-@@ -361,11 +361,16 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
-  * access() needs to use the real uid/gid, not the effective uid/gid.
+@@ -360,6 +360,10 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
   * We do this by temporarily clearing all FS-related capabilities and
   * switching the fsuid/fsgid around to the real ones.
   */
@@ -12,9 +13,3 @@
  SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
  {
  	const struct cred *old_cred;
-+#ifdef CONFIG_KSU_MANUAL_HOOK
-+	ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
-+#endif
- 	struct cred *override_cred;
- 	struct path path;
- 	struct inode *inode;

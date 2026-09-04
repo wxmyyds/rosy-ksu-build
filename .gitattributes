@@ -1,0 +1,6 @@
+# 统一行尾:文本文件一律 LF,防止编辑器造成的 CRLF 噪音
+* text=auto eol=lf
+
+# 二进制文件不做行尾转换
+*.img -text
+*.zip -text

@@ -1,0 +1,10 @@
+diff --git a/arch/arm64/kernel/vdso32/sigreturn.S b/arch/arm64/kernel/vdso32/sigreturn.S
+index 14e5f9c..3ffeac0 100644
+--- a/arch/arm64/kernel/vdso32/sigreturn.S
++++ b/arch/arm64/kernel/vdso32/sigreturn.S
+@@ -74,3 +74,5 @@ END(\name)
+ 	sigreturn_trampoline __kernel_rt_sigreturn_thumb, \
+ 			     __NR_rt_sigreturn, \
+ 			     COMPAT_RT_SIGFRAME_REGS_OFFSET
++
++	.section .note.GNU-stack,"",%progbits

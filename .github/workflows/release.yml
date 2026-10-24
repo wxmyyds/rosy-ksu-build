@@ -1,6 +1,10 @@
 name: Release from existing build
 
 on:
+  schedule:
+    # 每周五 12:00 北京时间（UTC+8）= UTC 04:00；定时运行时 tag 自动递增、
+    # 构建取最近一次成功的 build-kernel 产物
+    - cron: '0 4 * * 5'
   workflow_dispatch:
     inputs:
       tag:

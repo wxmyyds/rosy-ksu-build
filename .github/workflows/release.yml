@@ -75,13 +75,13 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          MANAGER_RUN=$(gh run list --repo ReSukiSU/ReSukiSU --workflow=build-manager.yml \
+          MANAGER_RUN=$(gh run list --repo Baka-SU/BakaSU --workflow=build-manager.yml \
             --commit "$KSU_SHA" --status=success --json databaseId --jq '.[0].databaseId')
           if [ -n "$MANAGER_RUN" ] && [ "$MANAGER_RUN" != "null" ]; then
-            MANAGER_URL="https://nightly.link/ReSukiSU/ReSukiSU/actions/runs/$MANAGER_RUN/Manager-release.zip"
+            MANAGER_URL="https://nightly.link/Baka-SU/BakaSU/actions/runs/$MANAGER_RUN/Manager-release.zip"
             echo "Found matching manager build for $KSU_SHA: $MANAGER_RUN"
           else
-            MANAGER_URL="https://nightly.link/ReSukiSU/ReSukiSU/workflows/build-manager/main/Manager-release.zip"
+            MANAGER_URL="https://nightly.link/Baka-SU/BakaSU/workflows/build-manager/main/Manager-release.zip"
             echo "No manager build for $KSU_SHA, falling back to latest main"
           fi
           echo "MANAGER_URL=$MANAGER_URL" >> $GITHUB_ENV
@@ -107,7 +107,7 @@ jobs:
             TAG="v$((MAX_NUM + 1))"
             echo "Auto-incremented tag: $TAG"
           fi
-          RELEASE_NAME="ReSukiSU-rosy-$KERNEL_VER-$TAG"
+          RELEASE_NAME="BakaSU-rosy-$KERNEL_VER-$TAG"
           echo "TAG=$TAG" >> $GITHUB_ENV
           echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
 
@@ -124,10 +124,10 @@ jobs:
             <br>
 
             - **[Kernel](https://github.com/baunilla/android_kernel_xiaomi_rosy) Version**: ${{ env.KERNEL_VER }}
-            - **[KernelSU](https://github.com/ReSukiSU/ReSukiSU) Version**: ${{ env.KSU_VER }}
+            - **[BakaSU](https://github.com/Baka-SU/BakaSU) Version**: ${{ env.KSU_VER }}
 
             <br>
 
-            - **ReSukiSU Manager**: [ReSukiSU Manager (${{ env.KSU_TAG }} ${{ env.KSU_VER }})](${{ env.MANAGER_URL }})
+            - **BakaSU Manager**: [BakaSU Manager (${{ env.KSU_TAG }} ${{ env.KSU_VER }})](${{ env.MANAGER_URL }})
           artifacts: artifacts/rosy-ksu-ak3.zip
           token: ${{ secrets.GITHUB_TOKEN }}

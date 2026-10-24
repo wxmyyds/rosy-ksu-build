@@ -1,4 +1,4 @@
-name: Build rosy kernel with ReSukiSU
+name: Build rosy kernel with BakaSU
 
 on:
   workflow_dispatch:
@@ -23,10 +23,10 @@ jobs:
           git clone https://github.com/baunilla/android_kernel_xiaomi_rosy.git \
             -b lineage-21.0 --depth=1 rosy
 
-      - name: Integrate ReSukiSU
+      - name: Integrate BakaSU
         working-directory: rosy
         run: |
-          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash
+          curl -LSs "https://raw.githubusercontent.com/Baka-SU/BakaSU/main/kernel/setup.sh" | bash
           echo "CONFIG_KSU=y" >> arch/arm64/configs/rosy-perf_defconfig
           echo "CONFIG_KSU_MANUAL_HOOK=y" >> arch/arm64/configs/rosy-perf_defconfig
           sed -i 's/^CONFIG_CC_STACKPROTECTOR_STRONG=y/CONFIG_CC_STACKPROTECTOR_NONE=y/' arch/arm64/configs/rosy-perf_defconfig

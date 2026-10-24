@@ -3,7 +3,7 @@
 
 ### AnyKernel setup
 properties() { '
-kernel.string=ReSukiSU for Xiaomi Redmi 5 (rosy) by wxmyyds
+kernel.string=BakaSU for Xiaomi Redmi 5 (rosy) by wxmyyds
 do.devicecheck=1
 device.name1=rosy
 do.cleanup=1

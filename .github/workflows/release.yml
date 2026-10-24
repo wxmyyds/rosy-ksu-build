@@ -88,23 +88,6 @@ jobs:
           echo "BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
           echo "BUILD_TIME=$BUILD_TIME"
 
-      - name: Resolve matching manager build
-        id: manager
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          MANAGER_RUN=$(gh run list --repo Baka-SU/BakaSU --workflow=build-manager.yml \
-            --commit "$KSU_SHA" --status=success --json databaseId --jq '.[0].databaseId')
-          if [ -n "$MANAGER_RUN" ] && [ "$MANAGER_RUN" != "null" ]; then
-            MANAGER_URL="https://nightly.link/Baka-SU/BakaSU/actions/runs/$MANAGER_RUN/Manager-release.zip"
-            echo "Found matching manager build for $KSU_SHA: $MANAGER_RUN"
-          else
-            MANAGER_URL="https://nightly.link/Baka-SU/BakaSU/workflows/build-manager/main/Manager-release.zip"
-            echo "No manager build for $KSU_SHA, falling back to latest main"
-          fi
-          echo "MANAGER_URL=$MANAGER_URL" >> $GITHUB_ENV
-          echo "MANAGER_URL=$MANAGER_URL"
-
       - name: Compute release tag
         id: tag
         env:
@@ -129,6 +112,44 @@ jobs:
           echo "TAG=$TAG" >> $GITHUB_ENV
           echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
 
+      # nightly.link 对 Baka-SU/BakaSU 已失效（上游仓库改名后应用授权丢失），
+      # 改为直接拉取匹配 commit 的管理器产物并作为 Release 附件。
+      # 需要 CROSS_REPO_TOKEN（对公开仓库有 actions:read 的 PAT）；未配置时退化为
+      # 指向 Actions run 页面的链接。
+      - name: Resolve manager APK
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROSS_REPO_TOKEN: ${{ secrets.CROSS_REPO_TOKEN }}
+        run: |
+          MANAGER_RUN=$(gh run list --repo Baka-SU/BakaSU --workflow=build-manager.yml \
+            --commit "$KSU_SHA" --status=success --json databaseId --jq '.[0].databaseId')
+          if [ -n "$MANAGER_RUN" ] && [ "$MANAGER_RUN" != "null" ]; then
+            echo "Found matching manager build for $KSU_SHA: $MANAGER_RUN"
+            if [ -n "$CROSS_REPO_TOKEN" ]; then
+              ART_ID=$(gh api -H "Authorization: Bearer $CROSS_REPO_TOKEN" \
+                "repos/Baka-SU/BakaSU/actions/runs/$MANAGER_RUN/artifacts" \
+                --jq '.artifacts[] | select(.name=="Manager-release") | .id')
+              if [ -n "$ART_ID" ]; then
+                gh api -H "Authorization: Bearer $CROSS_REPO_TOKEN" \
+                  "repos/Baka-SU/BakaSU/actions/artifacts/$ART_ID/zip" > /tmp/manager.zip
+                python3 -m zipfile -e /tmp/manager.zip /tmp/manager/
+                APK=$(find /tmp/manager -name "*arm64-v8a-release.apk" | head -1)
+                if [ -n "$APK" ]; then
+                  APK_NAME=$(basename "$APK")
+                  cp "$APK" "artifacts/$APK_NAME"
+                  MANAGER_URL="https://github.com/${{ github.repository }}/releases/download/$TAG/$APK_NAME"
+                  echo "MANAGER_APK=artifacts/$APK_NAME" >> $GITHUB_ENV
+                fi
+              fi
+            fi
+            [ -n "$MANAGER_URL" ] || MANAGER_URL="https://github.com/Baka-SU/BakaSU/actions/runs/$MANAGER_RUN"
+          else
+            MANAGER_URL="https://github.com/Baka-SU/BakaSU/actions/workflows/build-manager.yml"
+            echo "No manager build for $KSU_SHA, linking workflow page"
+          fi
+          echo "MANAGER_URL=$MANAGER_URL" >> $GITHUB_ENV
+          echo "MANAGER_URL=$MANAGER_URL"
+
       - name: Publish Release
         uses: ncipollo/release-action@v1
         with:
@@ -149,3 +170,9 @@ jobs:
             - **BakaSU Manager**: [BakaSU Manager (${{ env.KSU_TAG }} ${{ env.KSU_VER }})](${{ env.MANAGER_URL }})
           artifacts: artifacts/rosy-ksu-ak3.zip
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Attach manager APK
+        if: env.MANAGER_APK != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$TAG" "$MANAGER_APK" --repo ${{ github.repository }} --clobber

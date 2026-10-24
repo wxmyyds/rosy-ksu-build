@@ -1,6 +1,10 @@
-name: Release from existing build
+name: Build and release rosy kernel
 
 on:
+  schedule:
+    # 每周五 12:00 北京时间（UTC+8）= UTC 04:00：定时运行先构建新内核，
+    # 构建成功后立即发布（约 12:25）。构建失败则不发布。
+    - cron: '0 4 * * 5'
   workflow_dispatch:
     inputs:
       tag:
@@ -18,11 +22,25 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 90
     permissions:
       contents: write
-      actions: read
+      actions: write
     steps:
+      # 定时触发：先构建新内核并等它跑完；手动触发则跳过，直接发布现有最新构建
+      - name: Build kernel first
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run build-kernel.yml --ref main
+          echo "Build dispatched, waiting for registration..."
+          sleep 30
+          BUILD_RUN=$(gh run list --repo ${{ github.repository }} --workflow=build-kernel.yml \
+            --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
+          echo "Watching build run: $BUILD_RUN"
+          gh run watch "$BUILD_RUN" --repo ${{ github.repository }} --exit-status --interval 60
+
       - name: Resolve build run ID
         id: run
         env:

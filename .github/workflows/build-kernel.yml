@@ -1,15 +1,10 @@
 name: Build rosy kernel with BakaSU
 
 on:
-  schedule:
-    # 每周五 11:30 北京时间（UTC+8）= UTC 03:30；构建成功后自动触发 release.yml，
-    # 发布约在 12:00 前后完成。手动 workflow_dispatch 构建不会触发发布。
-    - cron: '30 3 * * 5'
   workflow_dispatch:
 
 permissions:
   contents: read
-  actions: write
 
 concurrency:
   group: build-kernel-${{ github.ref }}
@@ -115,9 +110,3 @@ jobs:
             rosy-ksu-ak3.zip
             kernel_version.txt
             ksu_version.txt
-
-      - name: Dispatch weekly release
-        if: github.event_name == 'schedule'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run release.yml --ref main

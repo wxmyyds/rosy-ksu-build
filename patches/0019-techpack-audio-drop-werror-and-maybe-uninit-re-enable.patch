@@ -1,0 +1,213 @@
+diff --git a/techpack/audio/asoc/Kbuild b/techpack/audio/asoc/Kbuild
+index ee4ec2e..b21add0 100644
+--- a/techpack/audio/asoc/Kbuild
++++ b/techpack/audio/asoc/Kbuild
+@@ -199,18 +199,10 @@ CDEFINES +=	-DANI_LITTLE_BYTE_ENDIAN \
+ 		-DANI_OS_TYPE_ANDROID=6 \
+ 		-DPTT_SOCK_SVC_ENABLE \
+ 		-Wall\
+-		-Werror\
+ 		-D__linux__
+ 
+ KBUILD_CPPFLAGS += $(CDEFINES)
+ 
+-# Currently, for versions of gcc which support it, the kernel Makefile
+-# is disabling the maybe-uninitialized warning.  Re-enable it for the
+-# AUDIO driver.  Note that we must use EXTRA_CFLAGS here so that it
+-# will override the kernel settings.
+-ifeq ($(call cc-option-yn, -Wmaybe-uninitialized),y)
+-EXTRA_CFLAGS += -Wmaybe-uninitialized
+-endif
+ #EXTRA_CFLAGS += -Wmissing-prototypes
+ 
+ ifeq ($(call cc-option-yn, -Wheader-guard),y)
+diff --git a/techpack/audio/asoc/codecs/Kbuild b/techpack/audio/asoc/codecs/Kbuild
+index 7c3b888..8651938 100644
+--- a/techpack/audio/asoc/codecs/Kbuild
++++ b/techpack/audio/asoc/codecs/Kbuild
+@@ -175,18 +175,10 @@ CDEFINES +=	-DANI_LITTLE_BYTE_ENDIAN \
+ 		-DANI_OS_TYPE_ANDROID=6 \
+ 		-DPTT_SOCK_SVC_ENABLE \
+ 		-Wall\
+-		-Werror\
+ 		-D__linux__
+ 
+ KBUILD_CPPFLAGS += $(CDEFINES)
+ 
+-# Currently, for versions of gcc which support it, the kernel Makefile
+-# is disabling the maybe-uninitialized warning.  Re-enable it for the
+-# AUDIO driver.  Note that we must use EXTRA_CFLAGS here so that it
+-# will override the kernel settings.
+-ifeq ($(call cc-option-yn, -Wmaybe-uninitialized),y)
+-EXTRA_CFLAGS += -Wmaybe-uninitialized
+-endif
+ #EXTRA_CFLAGS += -Wmissing-prototypes
+ 
+ ifeq ($(call cc-option-yn, -Wheader-guard),y)
+diff --git a/techpack/audio/asoc/codecs/msm_sdw/Kbuild b/techpack/audio/asoc/codecs/msm_sdw/Kbuild
+index 323d895..110a8ac 100644
+--- a/techpack/audio/asoc/codecs/msm_sdw/Kbuild
++++ b/techpack/audio/asoc/codecs/msm_sdw/Kbuild
+@@ -91,18 +91,10 @@ CDEFINES +=	-DANI_LITTLE_BYTE_ENDIAN \
+ 		-DANI_OS_TYPE_ANDROID=6 \
+ 		-DPTT_SOCK_SVC_ENABLE \
+ 		-Wall\
+-		-Werror\
+ 		-D__linux__
+ 
+ KBUILD_CPPFLAGS += $(CDEFINES)
+ 
+-# Currently, for versions of gcc which support it, the kernel Makefile
+-# is disabling the maybe-uninitialized warning.  Re-enable it for the
+-# AUDIO driver.  Note that we must use EXTRA_CFLAGS here so that it
+-# will override the kernel settings.
+-ifeq ($(call cc-option-yn, -Wmaybe-uninitialized),y)
+-EXTRA_CFLAGS += -Wmaybe-uninitialized
+-endif
+ #EXTRA_CFLAGS += -Wmissing-prototypes
+ 
+ ifeq ($(call cc-option-yn, -Wheader-guard),y)
+diff --git a/techpack/audio/asoc/codecs/sdm660_cdc/Kbuild b/techpack/audio/asoc/codecs/sdm660_cdc/Kbuild
+index 8be6cea..33b2974 100644
+--- a/techpack/audio/asoc/codecs/sdm660_cdc/Kbuild
++++ b/techpack/audio/asoc/codecs/sdm660_cdc/Kbuild
+@@ -110,18 +110,10 @@ CDEFINES +=	-DANI_LITTLE_BYTE_ENDIAN \
+ 		-DANI_OS_TYPE_ANDROID=6 \
+ 		-DPTT_SOCK_SVC_ENABLE \
+ 		-Wall\
+-		-Werror\
+ 		-D__linux__
+ 
+ KBUILD_CPPFLAGS += $(CDEFINES)
+ 
+-# Currently, for versions of gcc which support it, the kernel Makefile
+-# is disabling the maybe-uninitialized warning.  Re-enable it for the
+-# AUDIO driver.  Note that we must use EXTRA_CFLAGS here so that it
+-# will override the kernel settings.
+-ifeq ($(call cc-option-yn, -Wmaybe-uninitialized),y)
+-EXTRA_CFLAGS += -Wmaybe-uninitialized
+-endif
+ #EXTRA_CFLAGS += -Wmissing-prototypes
+ 
+ ifeq ($(call cc-option-yn, -Wheader-guard),y)
+diff --git a/techpack/audio/asoc/codecs/wcd934x/Kbuild b/techpack/audio/asoc/codecs/wcd934x/Kbuild
+index eadaf35..2b3809a 100644
+--- a/techpack/audio/asoc/codecs/wcd934x/Kbuild
++++ b/techpack/audio/asoc/codecs/wcd934x/Kbuild
+@@ -77,18 +77,10 @@ CDEFINES +=	-DANI_LITTLE_BYTE_ENDIAN \
+ 		-DANI_OS_TYPE_ANDROID=6 \
+ 		-DPTT_SOCK_SVC_ENABLE \
+ 		-Wall\
+-		-Werror\
+ 		-D__linux__
+ 
+ KBUILD_CPPFLAGS += $(CDEFINES)
+ 
+-# Currently, for versions of gcc which support it, the kernel Makefile
+-# is disabling the maybe-uninitialized warning.  Re-enable it for the
+-# AUDIO driver.  Note that we must use EXTRA_CFLAGS here so that it
+-# will override the kernel settings.
+-ifeq ($(call cc-option-yn, -Wmaybe-uninitialized),y)
+-EXTRA_CFLAGS += -Wmaybe-uninitialized
+-endif
+ #EXTRA_CFLAGS += -Wmissing-prototypes
+ 
+ ifeq ($(call cc-option-yn, -Wheader-guard),y)
+diff --git a/techpack/audio/dsp/Kbuild b/techpack/audio/dsp/Kbuild
+index e1a6832..95d39ce 100644
+--- a/techpack/audio/dsp/Kbuild
++++ b/techpack/audio/dsp/Kbuild
+@@ -133,18 +133,10 @@ CDEFINES +=	-DANI_LITTLE_BYTE_ENDIAN \
+ 		-DANI_OS_TYPE_ANDROID=6 \
+ 		-DPTT_SOCK_SVC_ENABLE \
+ 		-Wall\
+-		-Werror\
+ 		-D__linux__
+ 
+ KBUILD_CPPFLAGS += $(CDEFINES)
+ 
+-# Currently, for versions of gcc which support it, the kernel Makefile
+-# is disabling the maybe-uninitialized warning.  Re-enable it for the
+-# AUDIO driver.  Note that we must use EXTRA_CFLAGS here so that it
+-# will override the kernel settings.
+-ifeq ($(call cc-option-yn, -Wmaybe-uninitialized),y)
+-EXTRA_CFLAGS += -Wmaybe-uninitialized
+-endif
+ #EXTRA_CFLAGS += -Wmissing-prototypes
+ 
+ ifeq ($(call cc-option-yn, -Wheader-guard),y)
+diff --git a/techpack/audio/dsp/codecs/Kbuild b/techpack/audio/dsp/codecs/Kbuild
+index d754cc0..87ca0b3 100644
+--- a/techpack/audio/dsp/codecs/Kbuild
++++ b/techpack/audio/dsp/codecs/Kbuild
+@@ -124,18 +124,10 @@ CDEFINES +=	-DANI_LITTLE_BYTE_ENDIAN \
+ 		-DANI_OS_TYPE_ANDROID=6 \
+ 		-DPTT_SOCK_SVC_ENABLE \
+ 		-Wall\
+-		-Werror\
+ 		-D__linux__
+ 
+ KBUILD_CPPFLAGS += $(CDEFINES)
+ 
+-# Currently, for versions of gcc which support it, the kernel Makefile
+-# is disabling the maybe-uninitialized warning.  Re-enable it for the
+-# AUDIO driver.  Note that we must use EXTRA_CFLAGS here so that it
+-# will override the kernel settings.
+-ifeq ($(call cc-option-yn, -Wmaybe-uninitialized),y)
+-EXTRA_CFLAGS += -Wmaybe-uninitialized
+-endif
+ #EXTRA_CFLAGS += -Wmissing-prototypes
+ 
+ ifeq ($(call cc-option-yn, -Wheader-guard),y)
+diff --git a/techpack/audio/ipc/Kbuild b/techpack/audio/ipc/Kbuild
+index c5e8694..aa8f51d 100644
+--- a/techpack/audio/ipc/Kbuild
++++ b/techpack/audio/ipc/Kbuild
+@@ -153,7 +153,6 @@ CDEFINES +=	-DANI_LITTLE_BYTE_ENDIAN \
+ 		-DANI_OS_TYPE_ANDROID=6 \
+ 		-DPTT_SOCK_SVC_ENABLE \
+ 		-Wall\
+-		-Werror\
+ 		-D__linux__
+ 
+ KBUILD_CPPFLAGS += $(CDEFINES)
+@@ -198,13 +197,6 @@ KBUILD_EXTRA_SYMBOLS +=$(OUT)/obj/vendor/qcom/opensource/audio-kernel/dsp/Module
+ 
+ endif
+ 
+-# Currently, for versions of gcc which support it, the kernel Makefile
+-# is disabling the maybe-uninitialized warning.  Re-enable it for the
+-# AUDIO driver.  Note that we must use EXTRA_CFLAGS here so that it
+-# will override the kernel settings.
+-ifeq ($(call cc-option-yn, -Wmaybe-uninitialized),y)
+-EXTRA_CFLAGS += -Wmaybe-uninitialized
+-endif
+ #EXTRA_CFLAGS += -Wmissing-prototypes
+ 
+ ifeq ($(call cc-option-yn, -Wheader-guard),y)
+diff --git a/techpack/audio/soc/Kbuild b/techpack/audio/soc/Kbuild
+index abca706..2632e55 100644
+--- a/techpack/audio/soc/Kbuild
++++ b/techpack/audio/soc/Kbuild
+@@ -114,7 +114,6 @@ CDEFINES +=	-DANI_LITTLE_BYTE_ENDIAN \
+ 		-DANI_OS_TYPE_ANDROID=6 \
+ 		-DPTT_SOCK_SVC_ENABLE \
+ 		-Wall\
+-		-Werror\
+ 		-D__linux__
+ 
+ KBUILD_CPPFLAGS += $(CDEFINES)
+@@ -123,13 +122,6 @@ ifeq ($(KERNEL_BUILD), 0)
+ KBUILD_EXTRA_SYMBOLS +=$(OUT)/obj/vendor/qcom/opensource/audio-kernel/dsp/Module.symvers
+ endif
+ 
+-# Currently, for versions of gcc which support it, the kernel Makefile
+-# is disabling the maybe-uninitialized warning.  Re-enable it for the
+-# AUDIO driver.  Note that we must use EXTRA_CFLAGS here so that it
+-# will override the kernel settings.
+-ifeq ($(call cc-option-yn, -Wmaybe-uninitialized),y)
+-EXTRA_CFLAGS += -Wmaybe-uninitialized
+-endif
+ #EXTRA_CFLAGS += -Wmissing-prototypes
+ 
+ ifeq ($(call cc-option-yn, -Wheader-guard),y)

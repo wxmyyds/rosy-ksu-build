@@ -1,10 +1,6 @@
 name: Release from existing build
 
 on:
-  schedule:
-    # 每周五 12:00 北京时间（UTC+8）= UTC 04:00；定时运行时 tag 自动递增、
-    # 构建取最近一次成功的 build-kernel 产物
-    - cron: '0 4 * * 5'
   workflow_dispatch:
     inputs:
       tag:
@@ -49,7 +45,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh run download $RUN_ID --repo ${{ github.repository }} --name rosy-kernel-resukisu --dir artifacts
+          gh run download $RUN_ID --repo ${{ github.repository }} --name rosy-kernel-bakasu --dir artifacts
 
       - name: Read build metadata
         env:
